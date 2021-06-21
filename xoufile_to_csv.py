@@ -19,6 +19,16 @@ class XOU2CSV:
     regionPropertiesRowRange: List[int]
     regionNamesRowRange: List[int]
     xouFileName: str
+    runParameters: dict
+    xMin: float
+    xMax: float
+    kMin: int
+    yMin: float
+    yMax: float
+    lMax: float
+    dUnit: float
+    nReg: int
+    iCylin: int
 
     def __init__(self, xouFileName: str, outputCsvFileName: str):
         self.xouFileName = xouFileName
@@ -27,10 +37,11 @@ class XOU2CSV:
         self.regionPropertiesRowRange = list(range(2))
         self.regionNamesRowRange = list(range(2))
         with open(xouFileName, "r") as file:
-            self._findTitleRanges(file)
+            lines = file.readlines()
+            self._findTitleRanges(lines)
+            self._findRunParametersData(lines)
 
-    def _findTitleRanges(self, file: TextIOWrapper):
-        lines = file.readlines()
+    def _findTitleRanges(self, lines: List[str]):
         for row, line in enumerate(lines):
             if line == XOU2CSV.TITLE_RUN_PARAMETERS:
                 findingRange = self.runParametersRowRange
@@ -53,6 +64,18 @@ class XOU2CSV:
 
         self.regionNamesRowRange[1] = len(lines) - 1
 
+    def _findRunParametersData(self, lines: List[str]):
+        runParameterlines = lines[self.runParametersRowRange[0] +
+                                  1: self.runParametersRowRange[1] + 1]
+        runParameters_ = [line.replace("\n", "").split(":")
+                          for line in runParameterlines]
+        for parameterStrs in runParameters_:
+            if "." in parameterStrs[1]:
+                parameterStrs[1] = float(parameterStrs[1])
+            else:
+                parameterStrs[1] = int(parameterStrs[1])
+        self.runParameters = dict(runParameters_)
+
     def writeToCsv(self):
         skip_header = self.nodesRowRange[0] + 3
         max_rows = self.nodesRowRange[1] - self.nodesRowRange[0] - 2
@@ -60,9 +83,10 @@ class XOU2CSV:
             self.xouFileName,
             skip_header=skip_header,
             max_rows=max_rows)
+        # for i
         print(data)
 
     # f = open("eou/electrode.EOU")
 # field = XOU2CSV("eou/electrode.EOU", "a")
 # print(field.regionNamesRowRange)
-# field.writeToCsv()
+# print(field.runParameters)
