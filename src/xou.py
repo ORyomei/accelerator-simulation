@@ -14,8 +14,10 @@ class XOU:
     TITLE_NODES = "--- Nodes ---\n"
     TITLE_REGION_PROPERTIES = "--- Region properties --- \n"
     TITLE_REGION_NAMES = "--- Region names --- \n"
-    TITLES = [TITLE_RUN_PARAMETERS, TITLE_NODES,
-              TITLE_REGION_PROPERTIES, TITLE_REGION_NAMES]
+    TITLES = [
+        TITLE_RUN_PARAMETERS, TITLE_NODES, TITLE_REGION_PROPERTIES,
+        TITLE_REGION_NAMES
+    ]
     PHI_COLLUM = 7
     K_COLLUM = 0
     L_COLLUM = 1
@@ -63,9 +65,10 @@ class XOU:
 
     def _findRunParametersData(self, lines: List[str]):
         runParameterlines = lines[self.runParametersRowRange[0] +
-                                  1: self.runParametersRowRange[1] + 1]
-        runParameters_ = [line.replace("\n", "").split(":")
-                          for line in runParameterlines]
+                                  1:self.runParametersRowRange[1] + 1]
+        runParameters_ = [
+            line.replace("\n", "").split(":") for line in runParameterlines
+        ]
         for parameterStrs in runParameters_:
             if "." in parameterStrs[1]:
                 parameterStrs[1] = float(parameterStrs[1])
@@ -78,10 +81,9 @@ class XOU:
         writeRow: List[float]
         skip_header = self.nodesRowRange[0] + 3
         max_rows = self.nodesRowRange[1] - self.nodesRowRange[0] - 2
-        data = np.genfromtxt(
-            self.xouFileName,
-            skip_header=skip_header,
-            max_rows=max_rows)
+        data = np.genfromtxt(self.xouFileName,
+                             skip_header=skip_header,
+                             max_rows=max_rows)
         writeRow = []
         with open(outputCsvFileName, "a") as file:
             writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)

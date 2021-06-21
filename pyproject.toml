@@ -6,6 +6,8 @@ authors = ["ORyomei <o.ryomei1020@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+numpy = "^1.20.3"
+matplotlib = "^3.4.2"
 
 [tool.poetry.dev-dependencies]
 yapf = "0.30.0"
