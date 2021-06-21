@@ -1,5 +1,6 @@
 from io import TextIOWrapper
-from typing import List
+from typing import List, Tuple
+import numpy as np
 
 
 class XOU2CSV:
@@ -9,24 +10,28 @@ class XOU2CSV:
     TITLE_REGION_NAMES = "--- Region names --- \n"
     TITLES = [TITLE_RUN_PARAMETERS, TITLE_NODES,
               TITLE_REGION_PROPERTIES, TITLE_REGION_NAMES]
+    PHI_COLLUM = 7
+    K_COLLUM = 0
+    L_COLLUM = 1
 
     runParametersRowRange: List[int]
     nodesRowRange: List[int]
     regionPropertiesRowRange: List[int]
     regionNamesRowRange: List[int]
-    lines: List[str]
+    xouFileName: str
 
-    def __init__(self, fileName: str, outputCsvFileName: str):
-        self.file = open(fileName)
+    def __init__(self, xouFileName: str, outputCsvFileName: str):
+        self.xouFileName = xouFileName
         self.runParametersRowRange = list(range(2))
         self.nodesRowRange = list(range(2))
         self.regionPropertiesRowRange = list(range(2))
         self.regionNamesRowRange = list(range(2))
-        self.lines = self.file.readlines()
-        self._findTitleRanges()
+        with open(xouFileName, "r") as file:
+            self._findTitleRanges(file)
 
-    def _findTitleRanges(self):
-        for row, line in enumerate(self.lines):
+    def _findTitleRanges(self, file: TextIOWrapper):
+        lines = file.readlines()
+        for row, line in enumerate(lines):
             if line == XOU2CSV.TITLE_RUN_PARAMETERS:
                 findingRange = self.runParametersRowRange
                 self.runParametersRowRange[0] = row
@@ -46,12 +51,18 @@ class XOU2CSV:
             if line == "" or line == "\n":
                 findingRange[1] = row - 1
 
-        self.regionNamesRowRange[1] = len(self.lines) - 1
+        self.regionNamesRowRange[1] = len(lines) - 1
 
     def writeToCsv(self):
-        pass
+        skip_header = self.nodesRowRange[0] + 3
+        max_rows = self.nodesRowRange[1] - self.nodesRowRange[0] - 2
+        data = np.genfromtxt(
+            self.xouFileName,
+            skip_header=skip_header,
+            max_rows=max_rows)
+        print(data)
 
-
-# f = open("eou/electrode.EOU")
-# field = XOU2CSV(f, "a")
+    # f = open("eou/electrode.EOU")
+# field = XOU2CSV("eou/electrode.EOU", "a")
 # print(field.regionNamesRowRange)
+# field.writeToCsv()
