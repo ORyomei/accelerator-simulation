@@ -85,7 +85,7 @@ class XOU:
                              skip_header=skip_header,
                              max_rows=max_rows)
         writeRow = []
-        with open(outputCsvFileName, "a") as file:
+        with open(outputCsvFileName, "w") as file:
             writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
             for line in data:
                 writeRow.append(line[XOU.PHI_COLLUM])
