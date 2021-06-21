@@ -1,9 +1,15 @@
 from io import TextIOWrapper
 from typing import List, Tuple
 import numpy as np
+import csv
 
 
-class XOU2CSV:
+def xOU2CSV(xOUFileName: str, outputCsvFileName: str):
+    xou = XOU(xOUFileName)
+    xou.writeToCsv(outputCsvFileName)
+
+
+class XOU:
     TITLE_RUN_PARAMETERS = "--- Run parameters ---\n"
     TITLE_NODES = "--- Nodes ---\n"
     TITLE_REGION_PROPERTIES = "--- Region properties --- \n"
@@ -20,17 +26,8 @@ class XOU2CSV:
     regionNamesRowRange: List[int]
     xouFileName: str
     runParameters: dict
-    xMin: float
-    xMax: float
-    kMin: int
-    yMin: float
-    yMax: float
-    lMax: float
-    dUnit: float
-    nReg: int
-    iCylin: int
 
-    def __init__(self, xouFileName: str, outputCsvFileName: str):
+    def __init__(self, xouFileName: str):
         self.xouFileName = xouFileName
         self.runParametersRowRange = list(range(2))
         self.nodesRowRange = list(range(2))
@@ -43,19 +40,19 @@ class XOU2CSV:
 
     def _findTitleRanges(self, lines: List[str]):
         for row, line in enumerate(lines):
-            if line == XOU2CSV.TITLE_RUN_PARAMETERS:
+            if line == XOU.TITLE_RUN_PARAMETERS:
                 findingRange = self.runParametersRowRange
                 self.runParametersRowRange[0] = row
 
-            if line == XOU2CSV.TITLE_NODES:
+            if line == XOU.TITLE_NODES:
                 findingRange = self.nodesRowRange
                 self.nodesRowRange[0] = row
 
-            if line == XOU2CSV.TITLE_REGION_PROPERTIES:
+            if line == XOU.TITLE_REGION_PROPERTIES:
                 findingRange = self.regionPropertiesRowRange
                 self.regionPropertiesRowRange[0] = row
 
-            if line == XOU2CSV.TITLE_REGION_NAMES:
+            if line == XOU.TITLE_REGION_NAMES:
                 findingRange = self.regionNamesRowRange
                 self.regionNamesRowRange[0] = row
 
@@ -76,17 +73,60 @@ class XOU2CSV:
                 parameterStrs[1] = int(parameterStrs[1])
         self.runParameters = dict(runParameters_)
 
-    def writeToCsv(self):
+    def writeToCsv(self, outputCsvFileName: str):
+        data: np.ndarray
+        writeRow: List[float]
         skip_header = self.nodesRowRange[0] + 3
         max_rows = self.nodesRowRange[1] - self.nodesRowRange[0] - 2
         data = np.genfromtxt(
             self.xouFileName,
             skip_header=skip_header,
             max_rows=max_rows)
-        # for i
-        print(data)
+        writeRow = []
+        with open(outputCsvFileName, "a") as file:
+            writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
+            for line in data:
+                writeRow.append(line[XOU.PHI_COLLUM])
+                if len(writeRow) >= self.kMax:
+                    writer.writerow(writeRow)
+                    writeRow = []
 
-    # f = open("eou/electrode.EOU")
-# field = XOU2CSV("eou/electrode.EOU", "a")
-# print(field.regionNamesRowRange)
-# print(field.runParameters)
+    @property
+    def xMin(self):
+        return self.runParameters["XMin"]
+
+    @property
+    def xMax(self):
+        return self.runParameters["XMax"]
+
+    @property
+    def kMax(self):
+        return self.runParameters["KMax"]
+
+    @property
+    def yMin(self):
+        return self.runParameters["YMin"]
+
+    @property
+    def yMax(self):
+        return self.runParameters["YMax"]
+
+    @property
+    def lMax(self):
+        return self.runParameters["LMax"]
+
+    @property
+    def dUnit(self):
+        return self.runParameters["DUnit"]
+
+    @property
+    def nReg(self):
+        return self.runParameters["NReg"]
+
+    @property
+    def iCylin(self):
+        return self.runParameters["ICylin"]
+
+    @property
+    def condFlag(self):
+        return self.runParameters["CondFlag"]
