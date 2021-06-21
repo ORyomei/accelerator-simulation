@@ -48,7 +48,7 @@ class XOU2CSV:
 
         self.regionNamesRowRange[1] = len(self.lines) - 1
 
-    def parsePotential(self):
+    def writeToCsv(self):
         pass
 
 
