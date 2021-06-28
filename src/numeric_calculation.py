@@ -24,6 +24,8 @@ class NumericCalculation:
 
     def __init__(self):
         self.fileName = None
+        self.xHigherLimit = np.finfo(np.float64).max
+        self.xLowerLimit = np.finfo(np.float64).min
 
     def setInitialValue(self, xInitial: np.ndarray, vInitial: np.ndarray,
                         tDelta: np.float64, tInitial: np.float64,
@@ -53,6 +55,23 @@ class NumericCalculation:
 
     def setDataFileName(self, fileName: str):
         self.fileName = fileName
+
+    def setLimit(self, xLowerLimit: np.ndarray,
+                 xHigherLimit: np.ndarray) -> bool:
+        for (lowerLimit, higherLimit) in zip(xLowerLimit, xHigherLimit):
+            if lowerLimit >= higherLimit:
+                print("invalid Limit")
+                return False
+        self.xLowerLimit = xLowerLimit
+        self.xHigherLimit = xHigherLimit
+        return True
+
+    def _isInLimit(self) -> bool:
+        for (value, lowerLimit, higherLimit) in zip(self.x, self.xLowerLimit,
+                                                    self.xHigherLimit):
+            if value < lowerLimit or higherLimit < value:
+                return False
+        return True
 
     def _dxAnddv(self, xAndv: np.ndarray, t: np.float64) -> np.ndarray:
         return np.vstack([xAndv[1], self.a(xAndv[0], xAndv[1], t)])
@@ -130,7 +149,7 @@ class NumericCalculation:
                     self.distanceMaximum = distance
                 if count % logEvery == 0:
                     self._logData(writer)
-                if self.t >= self.tFinal:
+                if self.t >= self.tFinal or not self._isInLimit():
                     break
                 count += 1
 
@@ -147,7 +166,7 @@ class NumericCalculation:
                 self.distanceMaximum = distance
             if count % logEvery == 0:
                 self._logData()
-            if self.t >= self.tFinal:
+            if self.t >= self.tFinal or not self._isInLimit():
                 break
             count += 1
 
