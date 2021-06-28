@@ -28,6 +28,7 @@ class XOU:
     regionNamesRowRange: List[int]
     xouFileName: str
     runParameters: dict
+    data: np.ndarray
 
     def __init__(self, xouFileName: str):
         self.xouFileName = xouFileName
@@ -77,17 +78,16 @@ class XOU:
         self.runParameters = dict(runParameters_)
 
     def writeToCsv(self, outputCsvFileName: str):
-        data: np.ndarray
         writeRow: List[float]
         skip_header = self.nodesRowRange[0] + 3
         max_rows = self.nodesRowRange[1] - self.nodesRowRange[0] - 2
-        data = np.genfromtxt(self.xouFileName,
-                             skip_header=skip_header,
-                             max_rows=max_rows)
+        self.data = np.genfromtxt(self.xouFileName,
+                                  skip_header=skip_header,
+                                  max_rows=max_rows)
         writeRow = []
         with open(outputCsvFileName, "w") as file:
             writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
-            for line in data:
+            for line in self.data:
                 writeRow.append(line[XOU.PHI_COLLUM])
                 if len(writeRow) >= self.kMax:
                     writer.writerow(writeRow)
